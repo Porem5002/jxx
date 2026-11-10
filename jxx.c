@@ -112,36 +112,36 @@ bool jxx_parse_string(Jxx_Parser* parser, Jxx_Value* out_value)
 
     Jxx_Parser parser_snapshot = *parser;
 
-    size_t string_length = 0;
-    char* string_data = NULL;
+    Jxx_String string = {0};
     
     while(true)
     {
         char c = *parser->text_ptr;
         parser->text_ptr++;
 
+        // TODO: Check correctness of this. Usage of ' ' should be allowed
         if(c == '\0' || isspace(c))
-        {
-            *parser = parser_snapshot;
-            free(string_data);
-            return false;
-        }
+            goto failure;
 
         if(c == '\"')
             break;
 
         // TODO: Handle escape characters
 
-        // TODO: Handle allocation failure
-        string_data = realloc(string_data, string_length + 1);
-        string_data[string_length++] = c;
+        char* new_string_data = realloc(string.data, string.length + 1);
+        if(new_string_data == NULL)
+            goto failure;
+
+        string.data = new_string_data;
+        string.data[string.length++] = c;
     }
 
-    *out_value = (Jxx_Value){
-        .kind = JXX_VALUE_KIND_STRING,
-        .string = {  .length = string_length, .data = string_data }
-    };
+    *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_STRING, .string = string };
     return true;
+failure:
+    *parser = parser_snapshot;
+    jxx_free_string(&string);
+    return false;
 }
 
 bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value)
@@ -165,8 +165,14 @@ bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value)
         if(!jxx_parse_value(parser, &new_element))
             goto failure;
 
-        // TODO: Handle allocation failure
-        array.elements = realloc(array.elements, (array.element_count + 1) * sizeof(Jxx_Value));
+        Jxx_Value* new_elements_buffer = realloc(array.elements, (array.element_count + 1) * sizeof(Jxx_Value));
+        if(new_elements_buffer == NULL)
+        {
+            jxx_free_value(&new_element);
+            goto failure;
+        }
+
+        array.elements = new_elements_buffer;
         array.elements[array.element_count++] = new_element;
 
         if(jxx_match_char_and_advance(parser, ']'))
@@ -212,13 +218,26 @@ bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value)
         jxx_skip_whitespace(parser);
 
         if(!jxx_match_char_and_advance(parser, ':'))
+        {
+            jxx_free_value(&pair_name);
             goto failure;
+        }
 
         if(!jxx_parse_value(parser, &pair_value))
+        {
+            jxx_free_value(&pair_name);
             goto failure;
+        }
 
-        // TODO: Handle allocation failure
-        object.pairs = realloc(object.pairs, (object.pair_count + 1) * sizeof(Jxx_Pair));
+        Jxx_Pair* new_pairs_buffer = realloc(object.pairs, (object.pair_count + 1) * sizeof(Jxx_Pair));
+        if(new_pairs_buffer == NULL)
+        {
+            jxx_free_value(&pair_name);
+            jxx_free_value(&pair_value);
+            goto failure;
+        }
+
+        object.pairs = new_pairs_buffer;
         object.pairs[object.pair_count++] = (Jxx_Pair){ .name = pair_name.string, .value = pair_value };
 
         if(jxx_match_char_and_advance(parser, '}'))
