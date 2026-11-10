@@ -119,8 +119,8 @@ bool jxx_parse_string(Jxx_Parser* parser, Jxx_Value* out_value)
         char c = *parser->text_ptr;
         parser->text_ptr++;
 
-        // TODO: Check correctness of this
-        if(c != ' ' && (c == '\0' || isspace(c)))
+        // The JSON spec does not allow strings to contain raw control characters (values from 0x00 to 0x1F)
+        if(c >= 0x00 && c <= 0x1F)
             goto failure;
 
         if(c == '\"')
