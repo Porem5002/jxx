@@ -89,6 +89,10 @@ bool jxx_parse_number(Jxx_Parser* parser, Jxx_Value* out_value)
     if(result.outcome != FFC_OUTCOME_OK)
         return false;
 
+    // JSON does not support Infinity nor NaN
+    if(isinf(number_value) || isnan(number_value))
+        return false;
+
     parser->text_ptr = result.ptr;
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_NUMBER, .number = number_value };
     return true;
