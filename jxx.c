@@ -53,7 +53,7 @@ bool jxx_parse_null(Jxx_Parser* parser, Jxx_Value* out_value)
     if(!jxx_match_string_and_advance(parser, "null"))
         return false;
     
-    if(!isspace(*parser->text_ptr))
+    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
         return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_NULL };
@@ -67,7 +67,7 @@ bool jxx_parse_true(Jxx_Parser* parser, Jxx_Value* out_value)
     if(!jxx_match_string_and_advance(parser, "true"))
         return false;
     
-    if(!isspace(*parser->text_ptr))
+    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
         return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_TRUE };
@@ -81,7 +81,7 @@ bool jxx_parse_false(Jxx_Parser* parser, Jxx_Value* out_value)
     if(!jxx_match_string_and_advance(parser, "false"))
         return false;
     
-    if(!isspace(*parser->text_ptr))
+    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
         return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_FALSE };
@@ -203,7 +203,7 @@ bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value)
     jxx_skip_whitespace(parser);
     
     if(jxx_match_char_and_advance(parser, '}'))
-        goto failure;
+        goto success;
 
     while(true)
     {
