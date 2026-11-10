@@ -52,9 +52,6 @@ bool jxx_parse_null(Jxx_Parser* parser, Jxx_Value* out_value)
 
     if(!jxx_match_string_and_advance(parser, "null"))
         return false;
-    
-    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
-        return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_NULL };
     return true;
@@ -66,9 +63,6 @@ bool jxx_parse_true(Jxx_Parser* parser, Jxx_Value* out_value)
 
     if(!jxx_match_string_and_advance(parser, "true"))
         return false;
-    
-    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
-        return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_TRUE };
     return true;
@@ -79,9 +73,6 @@ bool jxx_parse_false(Jxx_Parser* parser, Jxx_Value* out_value)
     memset(out_value, 0, sizeof(*out_value));
 
     if(!jxx_match_string_and_advance(parser, "false"))
-        return false;
-    
-    if(*parser->text_ptr != '\0' && !isspace(*parser->text_ptr))
         return false;
 
     *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_FALSE };
