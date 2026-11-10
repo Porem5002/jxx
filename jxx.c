@@ -119,14 +119,31 @@ bool jxx_parse_string(Jxx_Parser* parser, Jxx_Value* out_value)
         char c = *parser->text_ptr;
         parser->text_ptr++;
 
-        // TODO: Check correctness of this. Usage of ' ' should be allowed
-        if(c == '\0' || isspace(c))
+        // TODO: Check correctness of this
+        if(c != ' ' && (c == '\0' || isspace(c)))
             goto failure;
 
         if(c == '\"')
             break;
 
-        // TODO: Handle escape characters
+        if(c == '\\')
+        {
+            switch (*parser->text_ptr)
+            {
+                case '"': c = '"'; break;
+                case '\\': c = '\\'; break;
+                case '/': c = '/'; break;
+                case 'b': c = '\b'; break;
+                case 'f': c = '\f'; break;
+                case 'n': c = '\n'; break;
+                case 'r': c = '\r'; break;
+                case 't': c = '\t'; break;
+                // TODO: Handle hex escape sequence (\uFFFF) 
+                default: goto failure;
+            }
+
+            *parser->text_ptr++;
+        }
 
         char* new_string_data = realloc(string.data, string.length + 1);
         if(new_string_data == NULL)

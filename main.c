@@ -90,6 +90,16 @@ void test_parse_string()
     test_assert(jxx_string_equals_cstr(&value.string, "MyName"));
 }
 
+void test_parse_string_escape_sequences()
+{
+    Jxx_Parser parser = { .text_ptr = "\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"" };
+    Jxx_Value value;
+
+    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(value.kind == JXX_VALUE_KIND_STRING);
+    test_assert(jxx_string_equals_cstr(&value.string, "\" \\ / \b \f \n \r \t"));
+}
+
 void test_parse_array_0_elem()
 {
     Jxx_Parser parser = { .text_ptr = "[]" };
@@ -173,6 +183,7 @@ int main()
     test_parse_false();
     test_parse_number();
     test_parse_string();
+    test_parse_string_escape_sequences();
     test_parse_array_0_elem();
     test_parse_array_1_elem();
     test_parse_array_n_elem();
