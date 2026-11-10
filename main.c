@@ -16,4 +16,6 @@ int main()
 
     printf("\"%.*s\": %f\n", value.object.pairs[0].name.length, value.object.pairs[0].name.data, value.object.pairs[0].value.number);
     printf("\"%.*s\": %f\n", value.object.pairs[1].name.length, value.object.pairs[1].name.data, value.object.pairs[1].value.number);
+
+    jxx_free_value(&value);
 }

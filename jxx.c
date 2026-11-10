@@ -151,8 +151,7 @@ bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value)
     if(!jxx_match_char_and_advance(parser, '['))
         return false;
 
-    size_t element_count = 0;
-    Jxx_Value* elements = NULL;
+    Jxx_Array array = {0};
 
     jxx_skip_whitespace(parser);
 
@@ -167,8 +166,8 @@ bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value)
             goto failure;
 
         // TODO: Handle allocation failure
-        elements = realloc(elements, (element_count + 1) * sizeof(Jxx_Value));
-        elements[element_count++] = new_element;
+        array.elements = realloc(array.elements, (array.element_count + 1) * sizeof(Jxx_Value));
+        array.elements[array.element_count++] = new_element;
 
         if(jxx_match_char_and_advance(parser, ']'))
             break;
@@ -178,15 +177,11 @@ bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value)
     }
 
 success:
-    *out_value = (Jxx_Value){
-        .kind = JXX_VALUE_KIND_ARRAY,
-        .array = { .element_count = element_count, .elements = elements }
-    };
+    *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_ARRAY, .array = array };
     return true;
 failure:
     *parser = parser_snapshot;
-    // TODO: Clean up existing elements
-    free(elements);
+    jxx_free_array(&array);
     return false;
 }
 
@@ -197,8 +192,7 @@ bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value)
     if(!jxx_match_char_and_advance(parser, '{'))
         return false;
 
-    size_t pair_count = 0;
-    Jxx_Pair* pairs = NULL;
+    Jxx_Object object = {0};
 
     jxx_skip_whitespace(parser);
     
@@ -224,8 +218,8 @@ bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value)
             goto failure;
 
         // TODO: Handle allocation failure
-        pairs = realloc(pairs, (pair_count + 1) * sizeof(Jxx_Pair));
-        pairs[pair_count++] = (Jxx_Pair){ .name = pair_name.string, .value = pair_value };
+        object.pairs = realloc(object.pairs, (object.pair_count + 1) * sizeof(Jxx_Pair));
+        object.pairs[object.pair_count++] = (Jxx_Pair){ .name = pair_name.string, .value = pair_value };
 
         if(jxx_match_char_and_advance(parser, '}'))
             break;
@@ -235,14 +229,11 @@ bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value)
     }
 
 success:
-    *out_value = (Jxx_Value){
-        .kind = JXX_VALUE_KIND_OBJECT,
-        .object = { .pair_count = pair_count, .pairs = pairs }
-    };
+    *out_value = (Jxx_Value){ .kind = JXX_VALUE_KIND_OBJECT, .object = object };
     return true;
 failure:
     *parser = parser_snapshot;
-    free(pairs);
+    jxx_free_object(&object);
     return false;
 }
 
@@ -266,4 +257,51 @@ bool jxx_parse_value(Jxx_Parser* parser, Jxx_Value* out_value)
 
     *parser = parser_snapshot;
     return false;
+}
+
+void jxx_free_string(Jxx_String* string)
+{
+    free(string->data);
+    memset(string, 0, sizeof(*string));
+}
+
+void jxx_free_array(Jxx_Array* array)
+{
+    for(size_t i = 0; i < array->element_count; i++)
+        jxx_free_value(&array->elements[i]);
+
+    free(array->elements);
+    memset(array, 0, sizeof(*array));
+}
+
+void jxx_free_object(Jxx_Object* object)
+{
+    for(size_t i = 0; i < object->pair_count; i++)
+    {
+        jxx_free_string(&object->pairs[i].name);
+        jxx_free_value(&object->pairs[i].value);
+    }
+
+    free(object->pairs);
+    memset(object, 0, sizeof(*object));
+}
+
+void jxx_free_value(Jxx_Value* value)
+{
+    switch(value->kind)
+    {
+        case JXX_VALUE_KIND_STRING:
+            jxx_free_string(&value->string);
+            break;
+        case JXX_VALUE_KIND_ARRAY:
+            jxx_free_array(&value->array);
+            break;
+        case JXX_VALUE_KIND_OBJECT:
+            jxx_free_object(&value->object);
+            break;
+        default:
+            break;
+    }
+
+    value->kind = JXX_VALUE_KIND_NULL;
 }
