@@ -48,7 +48,7 @@ void test_parse_null()
     Jxx_Parser parser = { .text_ptr = "null" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_NULL);
 }
 
@@ -57,7 +57,7 @@ void test_parse_true()
     Jxx_Parser parser = { .text_ptr = "true" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_TRUE);
 }
 
@@ -66,7 +66,7 @@ void test_parse_false()
     Jxx_Parser parser = { .text_ptr = "false" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_FALSE);
 }
 
@@ -75,7 +75,7 @@ void test_parse_number()
     Jxx_Parser parser = { .text_ptr = "123.456" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_NUMBER);
     test_assert(value.number == 123.456);
 }
@@ -85,7 +85,7 @@ void test_parse_string()
     Jxx_Parser parser = { .text_ptr = "\"MyName\"" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_STRING);
     test_assert(jxx_string_equals_cstr(&value.string, "MyName"));
 }
@@ -95,7 +95,7 @@ void test_parse_string_escape_sequences()
     Jxx_Parser parser = { .text_ptr = "\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_STRING);
     test_assert(jxx_string_equals_cstr(&value.string, "\" \\ / \b \f \n \r \t"));
 }
@@ -105,7 +105,7 @@ void test_parse_array_0_elem()
     Jxx_Parser parser = { .text_ptr = "[]" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_ARRAY);
     test_assert(value.array.element_count == 0);
 }
@@ -115,7 +115,7 @@ void test_parse_array_1_elem()
     Jxx_Parser parser = { .text_ptr = "[ true ]" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_ARRAY);
     test_assert(value.array.element_count == 1);
     test_assert(value.array.elements[0].kind == JXX_VALUE_KIND_TRUE);
@@ -126,7 +126,7 @@ void test_parse_array_n_elem()
     Jxx_Parser parser = { .text_ptr = "[ 1, 2, 3, 4, null ]" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_ARRAY);
     test_assert(value.array.element_count == 5);
 
@@ -150,7 +150,7 @@ void test_parse_object_0_pairs()
     Jxx_Parser parser = { .text_ptr = "{}" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_OBJECT);
     test_assert(value.object.pair_count == 0);
 }
@@ -160,7 +160,7 @@ void test_parse_object_n_pairs()
     Jxx_Parser parser = { .text_ptr = "{ \"A\": 10, \"bbb\": \"my_str123\", \"HelloMyNameIs_Done\": true }" };
     Jxx_Value value;
 
-    test_assert(jxx_parse_value(&parser, &value));
+    test_assert(jxx_parse(&parser, &value));
     test_assert(value.kind == JXX_VALUE_KIND_OBJECT);
     test_assert(value.object.pair_count == 3);
 

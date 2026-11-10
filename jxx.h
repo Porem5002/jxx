@@ -75,6 +75,7 @@ bool jxx_parse_string(Jxx_Parser* parser, Jxx_Value* out_value);
 bool jxx_parse_array(Jxx_Parser* parser, Jxx_Value* out_value);
 bool jxx_parse_object(Jxx_Parser* parser, Jxx_Value* out_value);
 bool jxx_parse_value(Jxx_Parser* parser, Jxx_Value* out_value);
+bool jxx_parse(Jxx_Parser* parser, Jxx_Value* out_value);
 
 void jxx_free_string(Jxx_String* string);
 void jxx_free_array(Jxx_Array* array);

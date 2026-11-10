@@ -336,3 +336,10 @@ void jxx_free_value(Jxx_Value* value)
 
     value->kind = JXX_VALUE_KIND_NULL;
 }
+
+bool jxx_parse(Jxx_Parser* parser, Jxx_Value* out_value)
+{
+    bool success_parse = jxx_parse_value(parser, out_value);
+    bool is_end_of_text = *parser->text_ptr == '\0';  
+    return success_parse && is_end_of_text;
+}
